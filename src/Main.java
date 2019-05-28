@@ -1,14 +1,20 @@
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import static java.util.stream.Collectors.*;
 
 public class Main {
-    static final int SIZE = 10;
+    public static final int SIZE = 10;
     private static final int h = 400;
     private static final int w = 400;
     private static final List<Integer> shipSizes = Arrays.asList(5,4,3,3,2);
@@ -16,145 +22,121 @@ public class Main {
 
     public static void main(String[] args) {
 
-        Board<UserShipsSquares> user = new Board<>(UserShipsSquares::new);
+        Board user = new Board();
         user.forButton((button) -> button.setBackground(Color.WHITE));
 
         user.panel.setSize(w,h);
         JFrame frame = new JFrame();
+        checkKeyPress();
         frame.add(user.panel);
         frame.setSize(w,h);
         frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         frame.setTitle("Battleship");
         frame.setVisible(true);
 
+
+
         //start the ship positioning
         //loop through the ships
 
-        int rotation = 0;//0 is up, 1 is right, 2 is down, 3 is right
+        AtomicReference<Rotation> rotation = new AtomicReference<>(Rotation.UP);//0 is up, 1 is right, 2 is down, 3 is right
         AtomicInteger index = new AtomicInteger(0);
         Producer<Boolean> inShipPlacement = () -> index.get() < shipSizes.size();
-        //TODO
-        // This is a fucking mess. Replace all of this with a Ship class, which is generated from r,c,rot,index.
-        // have a Ship#overlaps(Ship other) and Ship#isOverEdge()
-        // and Ship#forEachButton and Ship#forEachItem
-        // squares should have up references to the ship they belong to or null
-        // replace the isShip with a get method which checks the parent ship to null
+        AtomicReference<Cords> lastCords = new AtomicReference<>(new Cords(0,0));
+
     user.forEach(
         item -> {
           addOnHover(
               item.button,
               button -> {
                 if (inShipPlacement.get()) {
-
-                  // if it's still running the ship selection
-                  List<Cords> cords = shipLocations(item.r, item.c, rotation, index.get());
-
-                  user.forEach(
-                      around -> {
-                        if (cords.stream().anyMatch((x) -> x.r == around.r && x.c == around.c)) {
-                          if (around.isShip) {
-                            around.button.setBackground(Color.RED);
-                          } else {
-                            around.button.setBackground(Color.GRAY);
-                          }
-                        }
-                      });
+                  // ON HOVER
+                  redraw(new Ship(item.pos, rotation.get(), shipSizes.get(index.get())),user);
+                  lastCords.set(item.pos);
                 }
               },
               button -> {
                 if (inShipPlacement.get()) {
-                  // if it's still running the ship selection
-                  List<Cords> cords = shipLocations(item.r, item.c, rotation, index.get());
-                  user.forEach(
-                      around -> {
-                        if (cords.stream().anyMatch((x) -> x.r == around.r && x.c == around.c)) {
-                          if (around.isShip) {
-                            around.button.setBackground(Color.BLUE);
-                          } else {
-                            around.button.setBackground(Color.WHITE);
-                          }
-                        }
-                      });
+                    // ON UNHOVER
+                    redraw(new Ship(item.pos, rotation.get(), shipSizes.get(index.get())),user);
+                    lastCords.set(item.pos);
                 }
-                // deselect
               });
           item.button.addActionListener(
               (x) -> {
-                  //test to see if any of the shadowed squares are ships
-                  try{
-                      boolean anyOfShadowedAreShips = shipLocations(item.r,item.c,rotation,index.get()).stream()
-                          .map((cords) -> user.get(cords.r,cords.c))
-                          .anyMatch((it) -> it.isShip);
-                      if (inShipPlacement.get() && !item.isShip && !anyOfShadowedAreShips) {
-                          shipLocations(item.r, item.c, rotation, index.get())
-                                  .forEach(
-                                          cords -> {
-                                              UserShipsSquares i = user.get(cords.r, cords.c);
-                                              i.isShip = true;
-                                              i.button.setBackground(Color.BLUE);
-                                          });
-                          item.isShip = true;
-                          item.button.setBackground(Color.BLUE);
-                          index.getAndIncrement();
-                      }
-                    }catch(IndexOutOfBoundsException e){
-                      //this is thrown if it's out of bounds. the ship can not be placed
+                // ON CLICK
+                if (inShipPlacement.get()) {
+                  Ship on = new Ship(item.pos, rotation.get(), shipSizes.get(index.get()));
+                  if (on.getSquares().stream().allMatch(Cords::isOnBoard)) {
+                    //if all of them are on the board
+                    List<Square> squares =
+                        on.getSquares().stream().map(user::get).collect(toList());
+                    if (squares.stream().noneMatch(Square::isShip)) {
+                      // if none are ships or off the board, apply
+                      squares.forEach(it -> it.setShip(on).setColor(Color.BLUE));
+                      index.getAndIncrement();
+                      user.addShip(on);
+                    }
                   }
-
+                }
               });
+        });
+
+    // add listener to change rotation
+    addOnKeyPress(
+        82,
+        () -> {
+          if (inShipPlacement.get()) {
+              rotation.getAndUpdate(Rotation::next);
+              System.out.println("Rotation mode: " + rotation.get());
+              redraw(new Ship(lastCords.get(),rotation.get(),shipSizes.get(index.get())),user);
+          }
         });
         //noinspection StatementWithEmptyBody
         while(inShipPlacement.get()){
             //block the main thread till everything is done
         }
+        System.out.println("DONE");
 
+
+
+        private
     }
 
-
-    static class Rotations{
-        static final int UP = 0;
-        static final int RIGHT = 1;
-        static final int DOWN = 2;
-        static final int LEFT = 3;
+    private static void redraw(Ship on,Board board){
+        List<Cords> squaresOn = on.getSquares();
+        board.forEach(square -> {
+            if(square.isShip() && squaresOn.contains(square.pos)){
+                square.setColor(Color.RED);
+            }else if(square.isShip()){
+                square.setColor(Color.BLUE);
+            }else if(squaresOn.contains(square.pos)){
+                square.setColor(Color.GRAY);
+            }else{
+                square.setColor(Color.WHITE);
+            }
+        });
     }
 
-    private static List<Cords> shipLocations(
-            int r,
-            int c,
-            int rotation,
-            int index){
-        int shipSize = shipSizes.get(index);
-        List<Cords> list = new ArrayList<>();
-        int i = 0;
-        while(i < shipSize){
-            int newR = r;
-            int newC = c;
-            if(rotation == Rotations.UP){
-                newR+= i;
-            }
-            if(rotation == Rotations.DOWN){
-                newR-= i;
-            }
-            if(rotation == Rotations.RIGHT){
-                newC += i;
-            }
-            if(rotation == Rotations.LEFT){
-                newC -= i;
-            }
-            list.add(new Cords(newR,newC));
-            ++i;
-        }
-        return list;
-    }
+    private static void checkKeyPress(){
+        addOnKeyPress(e -> System.out.println("Got key event = " + e.getKeyCode()));
 
-    interface UnsafeRunnable {void run() throws Throwable;}
-    /** print all exceptions but continue anyway */
-    private static void unsafe(UnsafeRunnable runner){
-        try{
-            runner.run();
-        }catch(Throwable e){
-            e.printStackTrace();
-        }
+    }
+    private static void addOnKeyPress(int keycode, Runnable runner){
+        addOnKeyPress(e -> {
+                    if(e.getKeyCode() == keycode){
+                        runner.run();
+                    }
+                    });
+    }
+    private static void addOnKeyPress(Consumer<KeyEvent> consumer){
+        KeyboardFocusManager.getCurrentKeyboardFocusManager()
+                .addKeyEventDispatcher(e -> {
+                    if(e.getID() == KeyEvent.KEY_PRESSED){
+                        consumer.accept(e);
+                    }
+                    return false;
+                });
     }
     private static void addOnHover(JButton button,
                                    Consumer<JButton> consumer,

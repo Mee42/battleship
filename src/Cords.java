@@ -1,9 +1,28 @@
-public class Cords {
-    public final int r;
-    public final int c;
+import java.util.Objects;
 
-    public Cords(int r, int c) {
+class Cords {
+    final int r;
+    final int c;
+
+    Cords(int r, int c) {
         this.r = r;
         this.c = c;
     }
+
+    boolean isOnBoard(){
+        return r >= 0 &&
+                c >= 0 &&
+                r < Main.SIZE &&
+                c < Main.SIZE;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Cords cords = (Cords) o;
+        return r == cords.r &&
+                c == cords.c;
+    }
+
 }
