@@ -1,4 +1,3 @@
-import javafx.util.Pair;
 
 import java.util.Arrays;
 import java.util.List;
@@ -30,13 +29,17 @@ enum ComputerMode {
         throw new RuntimeException("hit MAX_PLACE_ATTEMPTS when trying to play as random");
     }),
 
-    TARGET_SHIPS(board -> {
-        board.squares()
-                .stream()
-                .filter(Square::isShip)
-                .filter(square ->{
-                    List<Pair<Integer,Integer>> offsets = //TODO
-                })
+    CHECKERS(board -> {
+       for(int i = 0;i<=1;i++){
+         for(int r = 0;r<Main.SIZE;r++){
+           for(int c = (r + i) % 2;c<Main.SIZE;c+=2){
+             Square square = board.get(new Cords(r,c));
+             if(!square.hasBeenClicked()){
+               square.click();return;
+             }
+           }
+         }
+       }
     })
 
     ;

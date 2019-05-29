@@ -1,4 +1,3 @@
-import com.sun.istack.internal.Nullable;
 
 import javax.swing.*;
 import java.awt.*;
@@ -10,7 +9,7 @@ class Square{
     final Cords pos;
     final JButton button;
     private boolean hasBeenClicked;
-    @Nullable private Ship parent = null;
+    private Ship parent = null;
 
     Square(Cords cords){
         this.pos = cords;
@@ -32,7 +31,7 @@ class Square{
         this.parent = ship;
         return this;
     }
-    @Nullable Ship getShip(){ return parent; }
+    Ship getShip(){ return parent; }
 
     Square setColor(Color color){
         button.setBackground(color);
