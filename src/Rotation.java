@@ -1,5 +1,6 @@
 /**
- * THis stores the next refrances as a string to avoid compile time errors
+ * THis stores the next refrances as a string to avoid compile time errors.
+ * It makes the storage of rotation very easy to manage
  */
 public enum Rotation {
     UP("RIGHT"),

@@ -1,5 +1,11 @@
 import java.util.Objects;
 
+/**
+  * This is a wrapper class around (int r, int c) to avoid errors.
+  * It allows List<Cords> to be made, as List<int,int> is not a thing.
+  * It also defines a boolean isOnBoard() method that makes sure that the given cordinites is on the board
+  * This moves that repeated functionality to one place. 
+  */
 class Cords {
     final int r;
     final int c;

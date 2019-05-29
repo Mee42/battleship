@@ -2,7 +2,16 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
-
+/**
+  * The SHip is a nice helper class that represents a placed ship.
+  * WHile it is not technicly needed, it allows for centrialized logic, and makes code much
+  * more consise.
+  *
+  * This ship is created with a position, rotation, and length.
+  * From this, it determins all of the squares that make up this ship.
+  * It also keeps track of where it has been hit
+  * this is most helpful when determining if every ship is sunk
+  */
 public class Ship {
   private final Cords pos;
   private final Rotation rotation;
@@ -28,14 +37,17 @@ public class Ship {
   public int getLength() {
     return length;
   }
-
+  /** 
+    * Returns true if this overlaps other 
+    * Note: doesn't call overlappingSquares for performace reasons
+    */
   boolean overlaps(Ship other){
       List<Cords> mine = getSquares();
       return other.getSquares()
               .stream()
               .anyMatch(mine::contains);
   }
-
+  /** Gets the overlapping squares */
   List<Cords> overlappingSquares(Ship other){
       List<Cords> mine = getSquares();
       return other.getSquares()
@@ -43,7 +55,8 @@ public class Ship {
               .filter(mine::contains)
               .collect(Collectors.toList());
   }
-
+  /** Hit it on the given cordinites.
+    * THis will catch most errors with incorrect hitting code */
   void hit(Cords cords){
       System.out.println("Hit! " + cords);
       if(!getSquares().contains(cords)){
@@ -65,13 +78,13 @@ public class Ship {
 
     List<Cords> getSquares(){
       List<Cords> squares = new ArrayList<>();
-      int index = 0;
+      int index = 0;//each square is offset from the center
       while(index < length){
           int newR = pos.r;
           int newC = pos.c;
           switch(rotation){
               case UP:
-                  newR -= index;
+                  newR -= index;//this switch statements offsets the correct value the correct way
                   break;
 
               case DOWN:
@@ -91,7 +104,7 @@ public class Ship {
   }
 
     @Override
-    public String toString() {
+    public String toString() {//for debugging
         return "Ship{" +
                 "pos=" + pos +
                 ", rotation=" + rotation +
