@@ -2,8 +2,11 @@ import javax.swing.*;
 import java.awt.*;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.function.Consumer;
+
+import static java.util.stream.Collectors.toList;
 
 class Board{
     private static final int SIZE = Main.SIZE;
@@ -21,7 +24,7 @@ class Board{
         layout.setHgap(0);
         layout.setVgap(0);
         panel.setLayout(layout);
-
+        panel.setSize(Main.HEIGHT,Main.WIDTH);
         for(int r = 0;r < SIZE;r++){
             List<Square> row = new ArrayList<>();
             for(int c = 0;c < SIZE;c++){
@@ -32,6 +35,11 @@ class Board{
             graph.add(row);
         }
     }
+
+    List<Square> squares(){
+        return graph.stream().flatMap(Collection::stream).collect(toList());
+    }
+
     void forEach(Consumer<Square> consumer){
         graph.forEach((list) -> list.forEach(consumer));
      }
@@ -44,7 +52,7 @@ class Board{
         ships.add(ship);
     }
 
-    public List<Ship> getShips() {
+    List<Ship> getShips() {
         return ships;
     }
 }

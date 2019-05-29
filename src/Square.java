@@ -9,7 +9,9 @@ import java.awt.*;
 class Square{
     final Cords pos;
     final JButton button;
+    private boolean hasBeenClicked;
     @Nullable private Ship parent = null;
+
     Square(Cords cords){
         this.pos = cords;
         button = new JButton();
@@ -37,4 +39,15 @@ class Square{
         return this;
     }
 
+    boolean hasBeenClicked() {
+        return hasBeenClicked;
+    }
+
+    void click(){
+        if(hasBeenClicked)
+            throw new RuntimeException("Can not click square that has already been clicked");
+        if(isShip())
+            parent.hit(this.pos);
+        hasBeenClicked = true;
+    }
 }

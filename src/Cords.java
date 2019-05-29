@@ -25,4 +25,11 @@ class Cords {
                 c == cords.c;
     }
 
+    @Override
+    public String toString() {
+        return "Cords{" +
+                "r=" + r +
+                ", c=" + c +
+                '}';
+    }
 }

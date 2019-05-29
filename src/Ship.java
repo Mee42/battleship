@@ -1,4 +1,5 @@
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -7,10 +8,13 @@ public class Ship {
   private final Rotation rotation;
   private final int length;
 
+  private List<Cords> hits;
+
   public Ship(Cords pos, Rotation rotation, int length) {
     this.pos = pos;
     this.rotation = rotation;
     this.length = length;
+    hits =  new ArrayList<>();
   }
 
   public Cords getPos() {
@@ -40,7 +44,26 @@ public class Ship {
               .collect(Collectors.toList());
   }
 
-  List<Cords> getSquares(){
+  void hit(Cords cords){
+      System.out.println("Hit! " + cords);
+      if(!getSquares().contains(cords)){
+          throw new RuntimeException("Can not hit ship where it does not exist");
+      }
+      if(hits.contains(cords)){
+          throw new RuntimeException("Can not hit ship where it has already been hit");
+      }
+      hits.add(cords);
+  }
+
+    public List<Cords> getHits() {
+        return hits;
+    }
+    boolean isSunk(){
+
+      return hits.size() == length;//when the size of the array is equal the the size of the ship there are no more left to hit
+    }
+
+    List<Cords> getSquares(){
       List<Cords> squares = new ArrayList<>();
       int index = 0;
       while(index < length){
@@ -67,4 +90,13 @@ public class Ship {
       return squares;
   }
 
+    @Override
+    public String toString() {
+        return "Ship{" +
+                "pos=" + pos +
+                ", rotation=" + rotation +
+                ", length=" + length +
+                ", hits=" + hits +
+                '}';
+    }
 }
