@@ -32,6 +32,11 @@ class Cords {
     }
 
     @Override
+    public int hashCode() {
+        return Objects.hash(r, c);
+    }
+
+    @Override
     public String toString() {
         return "Cords{" +
                 "r=" + r +

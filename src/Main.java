@@ -29,7 +29,7 @@ public class Main {
   static final int SIZE = 10;// This is the size of the board, in buttons. Square it to get the total count of buttons
   static final int HEIGHT = 400;// this is the height of each board
   static final int WIDTH = 400;// width, see HEIGHT
-  private static final List<Integer> shipSizes = Arrays.asList(5, 4, 3, 3, 2);//THis is the size of each ship, in order.
+  static final List<Integer> shipSizes = Arrays.asList(5, 4, 3, 3, 2);//THis is the size of each ship, in order.
   static final int MAX_PLACE_ATTEMPTS = 1000;//THis is a generic value to be used as an upper limit in brute-forcing alogrithms
                                              //  such as placing the enemy ships or the ComputerMode.RANDOM
                                       

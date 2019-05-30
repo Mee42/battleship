@@ -1,6 +1,7 @@
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.Objects;
 
 /**
  * THIs is a simple class that wraps a square. It contains it's position, it's JButton, if it's been clicked, and it's ship, if it has one
@@ -58,5 +59,27 @@ class Square{
         if(isShip())
             parent.hit(this.pos);
         hasBeenClicked = true;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Square square = (Square) o;
+        return Objects.equals(pos, square.pos);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(pos);
+    }
+
+    @Override
+    public String toString() {
+        return "Square{" +
+                "pos=" + pos +
+                ", hasBeenClicked=" + hasBeenClicked +
+                ", parent=" + parent +
+                '}';
     }
 }
